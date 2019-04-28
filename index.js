@@ -70,7 +70,7 @@ module.exports = class CadencePluginUpdater extends Plugin {
         }));
         let moveToTop = false;
 
-        if (result.stdout == "Already up to date.\n") {
+        if (result.stdout == "Already up to date.\n" || result.stdout == "Already up-to-date.\n") {
           p.icon = "tick";
 
         } else if (result.stdout.includes("\nFast-forward\n")) {
