@@ -25,7 +25,7 @@ module.exports = class CadencePluginUpdater extends Plugin {
 
   async startPlugin () {
     this.loadCSS(resolve(__dirname, 'style.scss'));
-    this.registerSettings('pc-cadence-pluginUpdater', 'Plugin Updater', Settings);
+    this.registerSettings('pc-cadence-pluginUpdater', 'Plugin Updater', props => React.createElement(Settings, {...props, plugin: this}));
   }
 
   getPluginInfo() {

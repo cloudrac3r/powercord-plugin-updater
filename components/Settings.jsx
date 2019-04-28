@@ -3,9 +3,9 @@ const { Button } = require('powercord/components');
 const { TextInput, SwitchItem } = require('powercord/components/settings');
 
 module.exports = class CadencePluginUpdaterSettings extends React.Component {
-  constructor () {
-    super();
-    this.plugin = powercord.pluginManager.get('pc-cadence-pluginUpdater');
+  constructor (props) {
+    super(props);
+    this.plugin = props.plugin;
     this.state = {
       updating: false,
       reloadAvailable: false,
