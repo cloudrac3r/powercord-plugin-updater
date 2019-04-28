@@ -1,14 +1,11 @@
 const { Plugin } = require('powercord/entities');
 const { resolve, join } = require('path');
-const { sleep, createElement } = require('powercord/util');
-const { ReactDOM, React } = require('powercord/webpack');
-const { Toast } = require('powercord/components');
+const { React } = require('powercord/webpack');
 
 const { promisify } = require('util');
 const cp = require('child_process');
 const exec = promisify(cp.exec);
-const fs = require("fs");
-const fsp = fs.promises;
+const fsp = require("fs").promises;
 
 const Settings = require('./components/Settings.jsx');
 

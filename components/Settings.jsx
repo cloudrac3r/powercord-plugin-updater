@@ -1,6 +1,5 @@
 const { React } = require('powercord/webpack');
 const { Button } = require('powercord/components');
-const { TextInput, SwitchItem } = require('powercord/components/settings');
 
 module.exports = class CadencePluginUpdaterSettings extends React.Component {
   constructor (props) {
