@@ -20,6 +20,7 @@ module.exports = class CadencePluginUpdater extends Plugin {
       cwd: join(__dirname, '..')
     };
 
+    this.latestInfo = [];
     this.getPluginInfo();
   }
 
@@ -28,30 +29,33 @@ module.exports = class CadencePluginUpdater extends Plugin {
     this.registerSettings('pc-cadence-pluginUpdater', 'Plugin Updater', props => React.createElement(Settings, {...props, plugin: this}));
   }
 
-  getPluginInfo() {
-    let pluginList = fs.readdirSync(this.cwd.cwd);
-    let info = pluginList.map(p => {
-      let git = fs.existsSync(join(this.cwd.cwd, p, ".git"));
-      return {
+  async getPluginInfo() {
+    let pluginList = await fsp.readdir(this.cwd.cwd);
+    let info = await Promise.all(pluginList.map(p => {
+      return fsp.stat(join(this.cwd.cwd, p, ".git"))
+      .then(() => true) // .git exists
+      .catch(() => false) // .git doesn't exist
+      .then(git => ({
         name: p,
         git,
         icon: git ? "tick" : "cross"
-      }
-    }).sort((a, b) => (b.git - a.git));
+      }));
+    }));
+    info.sort((a, b) => (b.git - a.git));
     this.latestInfo = info;
     return info;
   }
 
   async update(settings) {
-    let pluginInfo = this.getPluginInfo();
-    settings.setState(state => ({
-      updating: true,
-      pluginInfo: pluginInfo.map(p => {
-        if (p.git) p.icon = "updating";
-        delete p.message;
-        return p;
-      })
-    }));
+    settings.setState({updating: true});
+
+    let pluginInfo = await this.getPluginInfo();
+    pluginInfo.forEach(p => {
+      if (p.git) p.icon = "updating";
+      delete p.message;
+      return p;
+    });
+    settings.setState({pluginInfo});
 
     let topIndex = 0;
     let reloadAvailable = settings.state.reloadAvailable;
@@ -111,10 +115,10 @@ module.exports = class CadencePluginUpdater extends Plugin {
         }
 
         //log(result);
-        settings.setState({pluginInfo, reloadAvailable});
+        settings.setState({pluginInfo});
       }
     }));
 
-    settings.setState({updating: false});
+    settings.setState({updating: false, reloadAvailable});
   }
 };
