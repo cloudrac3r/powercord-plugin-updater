@@ -1,0 +1,7 @@
+{
+  "name": "Plugin Updater",
+  "version": "1.0.0",
+  "description": "Update plugins that have been cloned from git",
+  "author": "Cadence#3263",
+  "license": "AGPL-3.0"
+}
