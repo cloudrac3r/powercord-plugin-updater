@@ -32,7 +32,6 @@ module.exports = class CadencePluginUpdater extends Plugin {
       exec("git ls-files", this.cwd)
     ]);
     builtinList = builtinList.stdout.split("\n").map(line => line.split("/")[0]).filter((item, index, array) => (item && array.indexOf(item) == index));
-    console.log(builtinList);
     let info = await Promise.all(pluginList.map(p => {
       return fsp.stat(join(this.cwd.cwd, p, ".git"))
       .then(() => true) // .git exists
