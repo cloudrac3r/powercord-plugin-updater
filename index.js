@@ -27,18 +27,37 @@ module.exports = class CadencePluginUpdater extends Plugin {
   }
 
   async getPluginInfo() {
-    let pluginList = await fsp.readdir(this.cwd.cwd);
+    let [pluginList, builtinList] = await Promise.all([
+      fsp.readdir(this.cwd.cwd),
+      exec("git ls-files", this.cwd)
+    ]);
+    builtinList = builtinList.stdout.split("\n").map(line => line.split("/")[0]).filter((item, index, array) => (item && array.indexOf(item) == index));
+    console.log(builtinList);
     let info = await Promise.all(pluginList.map(p => {
       return fsp.stat(join(this.cwd.cwd, p, ".git"))
       .then(() => true) // .git exists
       .catch(() => false) // .git doesn't exist
-      .then(git => ({
-        name: p,
-        git,
-        icon: git ? "tick" : "cross"
-      }));
+      .then(git => {
+        let result = {
+          name: p,
+          git,
+          builtin: builtinList.includes(p),
+          icon: git ? "tick" : "cross"
+        }
+        if (result.git) {
+          result.priority = 0;
+          result.icon = "tick";
+        } else if (result.builtin) {
+          result.priority = 2;
+          result.icon = "dot";
+        } else {
+          result.priority = 1;
+          result.icon = "cross";
+        }
+        return result;
+      });
     }));
-    info.sort((a, b) => (b.git - a.git));
+    info.sort((a, b) => (a.priority - b.priority));
     this.latestInfo = info;
     return info;
   }
