@@ -7,6 +7,10 @@
   margin-left: 28px;
 }
 
+a.plugin-updater-list-link:hover {
+  text-decoration: underline;
+}
+
 .plugin-updater-button-container {
   display: flex;
 }

@@ -50,6 +50,7 @@ module.exports = class CadencePluginUpdater extends Plugin {
     pluginInfo.forEach(p => {
       if (p.git) p.icon = "updating";
       delete p.message;
+      delete p.link;
       return p;
     });
     settings.setState({pluginInfo});
@@ -64,7 +65,7 @@ module.exports = class CadencePluginUpdater extends Plugin {
         const log = thing => console.log(`[${p.name}]`, thing);
         //log("Running git pull --ff-only in "+cwd.cwd);
 
-        let result = await exec("git pull --ff-only", cwd).catch(e => ({
+        let result = await exec("git pull --ff-only --verbose", cwd).catch(e => ({
           stdout: "",
           stderr: e.message.slice(e.message.indexOf("\n")+1)
         }));
@@ -74,11 +75,19 @@ module.exports = class CadencePluginUpdater extends Plugin {
           p.icon = "tick";
 
         } else if (result.stdout.includes("\nFast-forward\n")) {
+          let outLines = result.stdout.split("\n");
+          let hashes = outLines.find(l => l.startsWith("Updating ")).split(" ")[1].split("..");
+          let errLines = result.stderr.split("\n");
+          let remote = errLines.find(l => l.startsWith("From ")).split(" ")[1];
+          if (remote.startsWith("https://github.com/")) {
+            p.link = remote+"/compare/"+hashes[0]+"..."+hashes[1]
+            p.message = "Open changes on GitHub";
+          }
           p.icon = "sparkles";
           reloadAvailable = true;
           moveToTop = true;
 
-        } else if (result.stderr == "fatal: Not possible to fast-forward, aborting.\n") {
+        } else if (result.stderr.includes("fatal: Not possible to fast-forward, aborting.\n")) {
           p.message = "Cannot fast-forward due to unmerged local changes. You'll need to merge manually.";
           p.icon = "failed";
           moveToTop = true;

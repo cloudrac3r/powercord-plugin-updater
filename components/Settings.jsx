@@ -52,7 +52,10 @@ module.exports = class CadencePluginUpdaterSettings extends React.Component {
           {info.name}
         </div>
         {info.message && <div className='plugin-updater-list-message'>
-          {info.message}
+          {info.link
+            ? <a href={info.link} target="_blank" className="plugin-updater-list-link">{info.message}</a>
+            : info.message
+          }
         </div>}
       </div>))}
     </div>;
