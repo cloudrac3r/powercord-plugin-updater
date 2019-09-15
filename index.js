@@ -33,32 +33,32 @@ module.exports = class CadencePluginUpdater extends Plugin {
       exec('git ls-files', this.cwd)
     ]);
     const builtinList = builtinListExec.stdout.split('\n').map(line => line.split('/')[0]).filter((item, index, array) => (item && array.indexOf(item) === index));
-    const info = [];
-    await Promise.all(pluginList.map(async p => {
+    let info = await Promise.all(pluginList.map(async p => {
       const dirStat = await fsp.stat(join(this.cwd.cwd, p));
-      console.log(dirStat);
-      if (dirStat.isDirectory()) {
-        const isBuiltIn = builtinList.includes(p);
-        const gitExists = await fsp.stat(join(this.cwd.cwd, p, '.git')).then(() => true).catch(() => false);
-        info.push({
-          name: p,
-          git: gitExists,
-          builtin: isBuiltIn,
-          icon:
-            gitExists
-              ? 'tick'
-              : isBuiltIn
-                ? 'dot'
-                : 'cross',
-          priority:
-            gitExists
-              ? 0
-              : isBuiltIn
-                ? 2
-                : 1
-        });
+      if (!dirStat.isDirectory()) {
+        return null;
       }
+      const isBuiltIn = builtinList.includes(p);
+      const gitExists = await fsp.stat(join(this.cwd.cwd, p, '.git')).then(() => true).catch(() => false);
+      return {
+        name: p,
+        git: gitExists,
+        builtin: isBuiltIn,
+        icon:
+          gitExists
+            ? 'tick'
+            : isBuiltIn
+              ? 'dot'
+              : 'cross',
+        priority:
+          gitExists
+            ? 0
+            : isBuiltIn
+              ? 2
+              : 1
+      };
     }));
+    info = info.filter(item => item !== null);
     info.sort((a, b) => (a.priority - b.priority));
     this.latestInfo = info;
     return info;
