@@ -23,38 +23,41 @@ module.exports = class CadencePluginUpdater extends Plugin {
 
   async startPlugin () {
     this.loadCSS(resolve(__dirname, 'style.scss'));
-    this.registerSettings('pc-cadence-pluginUpdater', 'Plugin Updater', props => React.createElement(Settings, {...props, plugin: this}));
+    this.registerSettings('powercord-plugin-updater', 'Plugin Updater', props => React.createElement(Settings, {...props, plugin: this}));
   }
 
   async getPluginInfo() {
-    let [pluginList, builtinList] = await Promise.all([
+    let [pluginList, builtinListExec] = await Promise.all([
       fsp.readdir(this.cwd.cwd),
       exec("git ls-files", this.cwd)
     ]);
-    builtinList = builtinList.stdout.split("\n").map(line => line.split("/")[0]).filter((item, index, array) => (item && array.indexOf(item) == index));
-    let info = await Promise.all(pluginList.map(p => {
-      return fsp.stat(join(this.cwd.cwd, p, ".git"))
-      .then(() => true) // .git exists
-      .catch(() => false) // .git doesn't exist
-      .then(git => {
-        let result = {
+    let builtinList = builtinListExec.stdout.split("\n").map(line => line.split("/")[0]).filter((item, index, array) => (item && array.indexOf(item) == index));
+    let info = [];
+    await Promise.all(pluginList.map(async p => {
+      let dirStat = await fsp.stat(join(this.cwd.cwd, p));
+      console.log(dirStat);
+      if (dirStat.isDirectory()) {
+        let isBuiltIn = builtinList.includes(p);
+        let gitExists = await fsp.stat(join(this.cwd.cwd, p, ".git")).then(() => true).catch(() => false)
+        info.push({
           name: p,
-          git,
-          builtin: builtinList.includes(p),
-          icon: git ? "tick" : "cross"
-        }
-        if (result.git) {
-          result.priority = 0;
-          result.icon = "tick";
-        } else if (result.builtin) {
-          result.priority = 2;
-          result.icon = "dot";
-        } else {
-          result.priority = 1;
-          result.icon = "cross";
-        }
-        return result;
-      });
+          git: gitExists,
+          builtin: isBuiltIn,
+          icon:
+            gitExists
+            ? "tick"
+            : isBuiltIn
+            ? "dot"
+            : "cross"
+          ,
+          priority:
+            gitExists
+            ? 0
+            : isBuiltIn
+            ? 2
+            : 1
+        });
+      }
     }));
     info.sort((a, b) => (a.priority - b.priority));
     this.latestInfo = info;
