@@ -1,10 +1,12 @@
 .plugin-updater-list-item {
   margin-bottom: 8px;
+  color: var(--text-normal);
 }
 
 .plugin-updater-list-message {
   margin-bottom: 8px;
   margin-left: 28px;
+  color: var(--text-muted);
 }
 
 a.plugin-updater-list-link:hover {
@@ -17,21 +19,4 @@ a.plugin-updater-list-link:hover {
 
 .plugin-updater-reload {
   margin-left: 6px;
-}
-
-.theme-dark {
-  .plugin-updater-list-item {
-    color: #dcddde;
-  }
-  .plugin-updater-list-message {
-    color: #a1a2a3;
-  }
-}
-.theme-light {
-  .plugin-updater-list-item {
-    color: #35373b;
-  }
-  .plugin-updater-list-message {
-    color: #72767d;
-  }
 }
