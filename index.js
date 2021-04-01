@@ -22,9 +22,12 @@ module.exports = class CadencePluginUpdater extends Plugin {
   }
 
   async startPlugin () {
-    this.loadCSS(resolve(__dirname, 'style.scss'));
-    this.registerSettings('powercord-plugin-updater', 'Plugin Updater', props => React.createElement(Settings, { ...props,
-      plugin: this }));
+    this.loadStylesheet('./style.scss');
+    powercord.api.settings.registerSettings('powercord-plugin-updater', {
+	category: this.entityID,
+	label: () => 'Plugin Updater', 
+	render: props => React.createElement(Settings, { ...props,
+      	plugin: this })});
   }
 
   async getPluginInfo () {
